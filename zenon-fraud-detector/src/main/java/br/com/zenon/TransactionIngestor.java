@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Optional;
 
 public class TransactionIngestor {
-    public static final int FRAUD_LIMITED = 100_000;
+    public static final int FRAUD_LIMITED = 10_000;
 
     public List<Transaction> read(String filename) {
         Path path = Path.of(filename);
