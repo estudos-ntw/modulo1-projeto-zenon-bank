@@ -5,9 +5,12 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Optional;
+import java.util.logging.Logger;
 
 public class TransactionSQLRepository implements TransactionRepository {
+    Logger logger = Logger.getLogger(TransactionSQLRepository.class.getName());
     @Override
     public void save(Transaction transaction) {
         String sql = """
@@ -97,6 +100,48 @@ public class TransactionSQLRepository implements TransactionRepository {
         } catch (SQLException e) {
             throw new RuntimeException(e);
 
+        }
+
+
+    }
+
+    public void saveAll(List<Transaction> transactions) {
+
+        String sql = """
+                insert into transactions 
+                (step, `type`, amount, 
+                name_origin, old_balance_origin, new_balance_origin, 
+                name_recipient,old_balance_recipient, new_balance_recipient, 
+                is_fraud, is_flagged_fraud)
+                values (?,?,?,?,?,?,?,?,?,?,?);
+                """;
+        try(Connection conn = ConnectionFactory.getConnection()){
+            for(Transaction transaction:transactions){
+                try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                    ps.setInt(1, transaction.step());
+                    ps.setString(2, transaction.type().name());
+                    ps.setBigDecimal(3, transaction.amount());
+
+                    ps.setString(4, transaction.origin().name());
+                    ps.setBigDecimal(5, transaction.origin().oldBalance());
+                    ps.setBigDecimal(6, transaction.origin().oldBalance());
+
+                    ps.setString(7, transaction.destination().name());
+                    ps.setBigDecimal(8, transaction.destination().oldBalance());
+                    ps.setBigDecimal(9, transaction.destination().oldBalance());
+
+                    ps.setBoolean(10, transaction.isFraud());
+                    ps.setBoolean(11, transaction.isFlaggedFraud());
+
+                    logger.info("Salvando transação: " + transaction.origin().name() + " -> " + transaction.destination().name() + " | Valor: " + transaction.amount());
+                    ps.execute();
+
+                } catch (SQLException e) {
+                    throw new RuntimeException("Erro ao salvar nova transação", e);
+                }
+            }
+        }catch (SQLException e) {
+            throw new RuntimeException("Erro na conexão: ", e);
         }
 
 

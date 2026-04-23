@@ -13,6 +13,7 @@ public class DBMain {
         var repository = new TransactionSQLRepository();
         IO.println("INICIANDO AS ADIÇÕES DAS TRANSAÇÕES NO BANCO DE DADOS...");
         transactions.forEach(repository::save);
+
         IO.println("IMPORTAÇÃO FINALIZADA");
     }
 }
